@@ -1,0 +1,10 @@
+ul.graphs li {
+    width: 400px;
+    display: inline-block;
+    text-align: center;
+    vertical-align: top;
+}
+
+.graph {
+
+}

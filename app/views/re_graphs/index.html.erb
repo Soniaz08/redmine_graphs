@@ -1,1 +1,59 @@
-<p>TEST</p>
+
+<% content_for :header_tags do %>
+    <%= stylesheet_link_tag 're_graphs', :plugin => 'redmine_graphs' %>
+    <%= javascript_include_tag "//www.google.com/jsapi", "chartkick" %>
+<% end %>
+
+
+<div style="text-align: center"> 
+<ul class="graphs">
+  <li>
+    <% users_leave = LeaveRequest.where(user_id: @project.users.pluck(:id)).joins(:user).group('users.login').count.sort_by {|_key, value| value}.reverse %>
+
+<div class="graph">
+  <h2 align="center">Leave creation by User</h2>
+  <%= pie_chart users_leave, height: "200px" %>
+</div>
+  </li>
+  <li>
+      <% data_day_of_week = TimeEntry.where(project_id: @project.id).group_by_day_of_week(:created_on)
+     data_day_of_week_new = data_day_of_week.dup
+     data_day_of_week.map {|c| data_day_of_week_new[Date::DAYNAMES[c[0].to_i]] = data_day_of_week_new.delete c[0] }
+     %>
+    <div class="graph">
+      <h2 align="center">Time Entry creation by day of the week</h2>
+      <%= pie_chart data_day_of_week_new.sort_by {|_key, value| value}.reverse, height: "200px" %>
+    </div>
+  </li>
+  <li>
+      <% data_day_of_week = Issue.where(project_id: @project.id).group_by_day_of_week(:created_on)
+     data_day_of_week_new = data_day_of_week.dup
+     data_day_of_week.map {|c| data_day_of_week_new[Date::DAYNAMES[c[0].to_i]] = data_day_of_week_new.delete c[0] }
+      %>
+    <div class="graph">
+      <h2 align="center">Issue creation by day of the week</h2>
+      <%= pie_chart data_day_of_week_new.sort_by {|_key, value| value}.reverse, height: "200px" %>
+    </div>
+  </li>
+
+  <li>
+    <div class="graph">
+      <h2 align="center">Q1 RFT</h2>
+      <%= pie_chart data_day_of_week_new.sort_by {|_key, value| value}.reverse, height: "200px" %>
+    </div>
+  </li>
+
+</ul>
+</div>  
+
+
+  <div class="graph">
+    <h2 align="center">200: OTD</h2>
+    <%= column_chart IssueQuery.find(200).issue_count_by_group.delete_if { |k| !k } %>
+  </div>
+
+
+  <div class="graph">
+    <h2 align="center">199: Delivery Date</h2>
+    <%= column_chart IssueQuery.find(199).issue_count_by_group.delete_if { |k| !k }.group_by {|k,v| k.beginning_of_month}.map{|v| [v[0], v[1].map{|l| l[1]}.inject(:+)]}.map{|a| [Date::MONTHNAMES[a[0].month],a[1]]} %>
+  </div>
